@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.get("/health")
 def health():
-    return jsonify(status="erreur")
+    return jsonify(status="ok")
 
 
 @app.get("/version")
