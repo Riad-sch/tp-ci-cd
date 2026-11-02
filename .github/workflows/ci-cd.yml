@@ -28,3 +28,26 @@ jobs:
 
       - name: Executer les tests
         run: python -m pytest -q
+        
+        - name: Construire l'image Docker
+        run: docker build -t application-tp:ci .
+
+      - name: Demarrer le conteneur
+        run: docker run -d --name api-test -p 8080:8000 application-tp:ci
+
+      - name: Verifier la disponibilite de l'API
+        run: |
+          for tentative in {1..15}; do
+            if curl --fail --silent --show-error --max-time 2 http://localhost:8080/health; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "L'API ne repond pas dans le delai prevu."
+          exit 1
+
+      - name: Afficher les journaux et nettoyer
+        if: always()
+        run: |
+          docker logs api-test || true
+          docker rm -f api-test || true
